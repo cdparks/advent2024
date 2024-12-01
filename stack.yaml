@@ -1,0 +1,6 @@
+resolver: nightly-2024-11-30
+extra-deps: []
+packages:
+- .
+system-ghc: true
+compiler-check: newer-minor

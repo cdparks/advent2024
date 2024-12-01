@@ -1,0 +1,139 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           advent2024
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/advent2024#readme>
+homepage:       https://github.com/cdparks/advent2024#readme
+bug-reports:    https://github.com/cdparks/advent2024/issues
+author:         Christopher D. Parks
+maintainer:     christopher.daniel.parks@gmail.com
+copyright:      2024 Christopher D. Parks
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/cdparks/advent2024
+
+library
+  exposed-modules:
+      Advent.Day01Spec
+      Advent.Input
+      Advent.Parse
+      Advent.Prelude
+      Spec
+  other-modules:
+      Paths_advent2024
+  autogen-modules:
+      Paths_advent2024
+  hs-source-dirs:
+      src
+  default-extensions:
+      BangPatterns
+      DeriveAnyClass
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveTraversable
+      DerivingStrategies
+      DerivingVia
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      GeneralizedNewtypeDeriving
+      ImportQualifiedPost
+      LambdaCase
+      MultiParamTypeClasses
+      NamedFieldPuns
+      NoFieldSelectors
+      NoImplicitPrelude
+      NoStarIsType
+      OverloadedStrings
+      OverloadedRecordDot
+      PatternSynonyms
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TupleSections
+      TypeApplications
+      TypeFamilies
+      ViewPatterns
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      attoparsec
+    , base >=4.7 && <5
+    , containers
+    , extra
+    , filepath
+    , hashable
+    , hspec
+    , hspec-api
+    , microlens
+    , microlens-mtl
+    , monoidal-containers
+    , mtl
+    , safe
+    , text
+    , time
+    , unliftio
+    , unliftio-core
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
+
+executable advent2024
+  main-is: Main.hs
+  other-modules:
+      Paths_advent2024
+  autogen-modules:
+      Paths_advent2024
+  hs-source-dirs:
+      exe
+  default-extensions:
+      BangPatterns
+      DeriveAnyClass
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveTraversable
+      DerivingStrategies
+      DerivingVia
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      GeneralizedNewtypeDeriving
+      ImportQualifiedPost
+      LambdaCase
+      MultiParamTypeClasses
+      NamedFieldPuns
+      NoFieldSelectors
+      NoImplicitPrelude
+      NoStarIsType
+      OverloadedStrings
+      OverloadedRecordDot
+      PatternSynonyms
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TupleSections
+      TypeApplications
+      TypeFamilies
+      ViewPatterns
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      advent2024
+    , base >=4.7 && <5
+  default-language: Haskell2010
