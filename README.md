@@ -57,7 +57,8 @@ clean                 Clean project
 
 ### Stubbing out new modules
 
-Use the `stub.py` script to stub out a new module:
+Use the `stub.py` script to stub out a new module and download the
+day's puzzle input:
 
 ```console
 $ ./stub.py -h
@@ -94,6 +95,13 @@ Changes not staged for commit:
 	modified:   src/Advent/Day01Spec.hs
 	modified:   src/Advent/Day02Spec.hs
 ```
+
+Note that, per the AoC creator's wishes, puzzle input is not kept in
+version control:
+
+> Advent of Code is free to use, not free to copy. If you're posting a
+> code repository somewhere, please don't include parts of Advent of
+> Code like the puzzle text or your inputs
 
 [Advent of Code 2024]: https://adventofcode.com/2024
 [Haskell]: https://www.haskell.org

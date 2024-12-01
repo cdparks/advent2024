@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
-import sys
-import os.path
 from pathlib import Path
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 import argparse
+import os.path
+import sys
 
 def main(days, error, force=False):
     modules = [
-        (day, 'src/Advent/Day{:02}Spec.hs'.format(day))
+        (day, f'src/Advent/Day{day:02}Spec.hs')
         for day in days
     ]
 
@@ -18,16 +20,23 @@ def main(days, error, force=False):
 
     if extant:
         if force:
-            print('force overwriting {}'.format(extant))
+            print(f'force overwriting {extant}')
         else:
-            error('cowardly refusing to overwrite {}'.format(extant))
+            error(f'cowardly refusing to overwrite {extant}')
 
+    session = get_session(error)
     for day, module in modules:
         with open(module, 'w') as f:
             f.write(template.format(day=day))
 
-        touch('inputs/test{:02}.txt'.format(day))
-        touch('inputs/day{:02}.txt'.format(day))
+        touch(f'inputs/test{day:02}.txt')
+
+        input_file = f'inputs/day{day:02}.txt'
+        if os.path.isfile(input_file) and not force:
+            print(f'using cached input for day {day}')
+        else:
+            with open(f'inputs/day{day:02}.txt', 'w') as f:
+                f.write(fetch(session, day))
 
 def touch(filename):
     '''Touch file at path'''
@@ -39,6 +48,30 @@ def parseDay(text):
     if day < 1 or 25 < day:
         raise ValueError('day {} does not satisfy 1 <= day <= 25'.format(day))
     return day
+
+def get_session(error):
+    '''Grab session cookie from AOC_SESSION env var or file'''
+    session = os.getenv('AOC_SESSION')
+    if session is not None:
+        return session
+    try:
+        return open('AOC_SESSION').read()
+    except Exception as e:
+        error('set AOC_SESSION environment variable or write AOC_SESSION file')
+
+def fetch(session, day):
+    '''Fetch this day's puzzle input'''
+    req = Request(f'https://adventofcode.com/2024/day/{day}/input')
+    req.add_header('cookie', f'session={session}')
+    req.add_header('user-agent', 'github.com/cdparks/advent2024')
+
+    try:
+        return urlopen(req).read().decode('utf-8')
+    except HTTPError as e:
+        if e.code == 404:
+            print(f'input for day {day} not available yet; touching empty file')
+            return ''
+        raise e
 
 # Haskell module template
 template = '''module Advent.Day{day:02}Spec
