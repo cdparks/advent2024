@@ -25,6 +25,7 @@ source-repository head
 library
   exposed-modules:
       Advent.Day01Spec
+      Advent.Day02Spec
       Advent.Input
       Advent.Parse
       Advent.Prelude
