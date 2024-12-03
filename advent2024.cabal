@@ -26,6 +26,7 @@ library
   exposed-modules:
       Advent.Day01Spec
       Advent.Day02Spec
+      Advent.Day03Spec
       Advent.Input
       Advent.Parse
       Advent.Prelude

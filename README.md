@@ -4,7 +4,7 @@ Solutions for ❄️[Advent of Code 2024]❄️ in [Haskell]
 
 | Su   | Mo   | Tu   | We   | Th   | Fr   | Sa   |
 | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-| 1 ⭐ | 2 ⭐ | 3    | 4    | 5    | 6    | 7    |
+| 1 ⭐ | 2 ⭐ | 3 ⭐ | 4    | 5    | 6    | 7    |
 | 8    | 9    | 10   | 11   | 12   | 13   | 14   |
 | 15   | 16   | 17   | 18   | 19   | 20   | 21   |
 | 22   | 23   | 24   | 25   | 26   | 27   | 28   |
@@ -92,12 +92,12 @@ $ git status
 On branch main
 
 Changes not staged for commit:
-	modified:   src/Advent/Day01Spec.hs
-	modified:   src/Advent/Day02Spec.hs
+    modified:   src/Advent/Day01Spec.hs
+    modified:   src/Advent/Day02Spec.hs
 ```
 
-Note that, per the AoC creator's wishes, puzzle input is not kept in
-version control:
+Note that, [per the AoC creator's wishes][Copying], puzzle input is not
+kept in version control:
 
 > Advent of Code is free to use, not free to copy. If you're posting a
 > code repository somewhere, please don't include parts of Advent of
@@ -106,3 +106,4 @@ version control:
 [Advent of Code 2024]: https://adventofcode.com/2024
 [Haskell]: https://www.haskell.org
 [hspec]: https://hspec.github.io
+[Copying]: https://adventofcode.com/about#faq_copying

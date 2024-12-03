@@ -9,7 +9,7 @@ import Advent.Parse
 import Data.Map.Strict qualified as Map
 
 spec :: Spec
-spec = parsing pair 1 $ do
+spec = parsing columns 1 $ do
   it "1" $ \Input{..} -> do
     uncurry part1 example `shouldBe` 11
     uncurry part1 problem `shouldBe` 2113135
@@ -30,5 +30,5 @@ part2 xs ys =
  where
   freq = Map.fromListWith (+) $ (,1) <$> ys
 
-pair :: Parser ([Int], [Int])
-pair = unzip <$> many ((,) <$> token decimal <*> token decimal)
+columns :: Parser ([Int], [Int])
+columns = unzip <$> many ((,) <$> token decimal <*> token decimal)
