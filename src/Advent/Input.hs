@@ -16,8 +16,8 @@ parsing :: Parser a -> Int -> SpecWith (Input a) -> Spec
 parsing parser = beforeAll . parse parser
 
 -- | Read inputs before all tests in a spec group run
-reading :: Int -> SpecWith (Input Text) -> Spec
-reading = beforeAll . load
+reading :: (Text -> a) -> Int -> SpecWith (Input a) -> Spec
+reading f = beforeAll . fmap (fmap f) . load
 
 -- | Some test and problem input data
 data Input a = Input
