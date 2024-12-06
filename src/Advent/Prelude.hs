@@ -43,6 +43,7 @@ import Control.Arrow as X ((&&&))
 import Control.Monad as X
 import Control.Monad.IO.Unlift as X
 import Control.Monad.State.Strict as X
+import Control.Parallel.Strategies as X
 import Data.Bifunctor as X
 import Data.Bifoldable as X
 import Data.Bitraversable as X
@@ -89,6 +90,8 @@ import qualified Text.Read as Read
 import UnliftIO.Directory as X
 import UnliftIO.Exception as X
 import UnliftIO.IORef as X
+import UnliftIO.Async as X
+
 
 -- | foldM with the functional argument last
 forAccum :: (Foldable t, Monad m) => s -> t a -> (s -> a -> m s) -> m s

@@ -74,6 +74,7 @@ library:
   - microlens-mtl
   - monoidal-containers
   - mtl
+  - parallel
   - safe
   - text
   - time

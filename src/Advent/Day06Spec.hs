@@ -23,9 +23,14 @@ part1 :: Grid -> Int
 part1 = HashSet.size . search
 
 part2 :: Grid -> Int
-part2 g = sum $ do
-  p <- HashSet.toList $ search g
-  1 <$ guard (hasCycle g { block = HashSet.insert p g.block })
+part2 g =
+  sum $ parFor ps $ \p ->
+    if hasCycle g { block = HashSet.insert p g.block }
+      then 1
+      else 0
+ where
+  ps = HashSet.toList $ search g
+  parFor = flip $ parMap rpar
 
 search :: Grid -> HashSet (Int, Int)
 search Grid{ start = Just s, ..} =
