@@ -47,6 +47,7 @@ import Control.Parallel.Strategies as X
 import Data.Bifunctor as X
 import Data.Bifoldable as X
 import Data.Bitraversable as X
+import Data.Bits as X
 import Data.Bool as X (bool)
 import Data.Char as X
 import Data.Either as X
@@ -91,7 +92,6 @@ import UnliftIO.Directory as X
 import UnliftIO.Exception as X
 import UnliftIO.IORef as X
 import UnliftIO.Async as X
-
 
 -- | foldM with the functional argument last
 forAccum :: (Foldable t, Monad m) => s -> t a -> (s -> a -> m s) -> m s

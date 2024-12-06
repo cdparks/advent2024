@@ -1,16 +1,22 @@
 {-# LANGUAGE StrictData #-}
+{-# OPTIONS_GHC -fno-warn-x-partial #-} -- Use of 'head' in 'toGrid'
 
 module Advent.Day06Spec
   ( spec
   ) where
 
-import Advent.Prelude hiding (empty)
+import Advent.Prelude
 
 import Advent.Input
+import Control.Monad.ST.Strict (runST, ST)
 import Data.HashSet qualified as HashSet
+import Data.List (head)
+import Data.Vector.Unboxed ((!))
+import Data.Vector.Unboxed qualified as U
+import Data.Vector.Unboxed.Mutable qualified as MU
 
 spec :: Spec
-spec = reading toMap 6 $ do
+spec = reading toGrid 6 $ do
   it "1" $ \Input{..} -> do
     part1 example `shouldBe` 41
     part1 problem `shouldBe` 5329
@@ -23,46 +29,64 @@ part1 :: Grid -> Int
 part1 = HashSet.size . search
 
 part2 :: Grid -> Int
-part2 g = sum $ go $ \p ->
-  if hasCycle g { block = HashSet.insert p g.block }
-    then 1
-    else 0
+part2 g@Grid{..} = sum $ runST $ do
+  tiles <- U.thaw grid
+  seen <- MU.replicate (width * height) 0
+  for (zip3 [1..] (start:qs) qs) $ \(gen, (px, py), (qx, qy)) -> do
+    MU.write tiles (px + py * width) 0
+    MU.write tiles (qx + qy * width) 1
+    found <- hasCycle g gen tiles seen
+    pure $ if found then 1 else 0
  where
-  go f = parMap rpar f $ HashSet.toList $ search g
+  qs = HashSet.toList $ search g
 
 search :: Grid -> HashSet (Int, Int)
-search = \case
-  Grid{ start = Nothing } -> mempty
-  Grid{ start = Just s, ..} ->
-    go (HashSet.singleton s) (0, -1) s
+search Grid {..} =
+  go (HashSet.singleton start) (0, -1) start
+ where
+  go !seen v p
+    | oob = seen
+    | obstacle = go seen v' p
+    | otherwise = go (HashSet.insert p' seen) v p'
    where
-    go !seen v p
-      | outOfBounds               = seen
-      | p' `HashSet.member` block = go seen v' p
-      | otherwise                 = go (HashSet.insert p' seen) v p'
-     where
-      p'@(x, y) = p `add` v
-      v' = rot90 v
-      outOfBounds = x < 0 || x > width || y < 0 || y > height
+    p'@(x, y) = p `add` v
+    v' = rot90 v
+    oob = x < 0 || x >= width || y < 0 || y >= height
+    obstacle = grid ! (x + y * width) == 1
 
-hasCycle :: Grid -> Bool
-hasCycle = \case
-  Grid{ start = Nothing } -> False
-  Grid{ start = Just s, ..} -> do
-    let up = (0, -1)
-    go (HashSet.singleton (up, s)) up s
+hasCycle :: forall s. Grid -> Word -> MU.MVector s Word8 -> MU.MVector s Word -> ST s Bool
+hasCycle Grid{ start = start@(sx, sy), ..} gen tiles seen = do
+  let up = (0, -1)
+  MU.write seen (sx + sy * width) $ (gen `shiftL` 4) .|. flag up
+  go up start
+ where
+  go v p@(x, y)
+    | oob = pure False
+    | otherwise = MU.unsafeRead tiles i' >>= \case
+      0 -> update i' v   p' -- free
+      _ -> update i  v'  p  -- obstacle
    where
-    go !seen v p
-      | outOfBounds               = False
-      | p' `HashSet.member` block = (v', p ) `HashSet.member` seen || go (HashSet.insert (v', p ) seen) v' p
-      | otherwise                 = (v , p') `HashSet.member` seen || go (HashSet.insert (v , p') seen) v  p'
-     where
-      p'@(x, y) = p `add` v
-      v' = rot90 v
-      outOfBounds = x < 0 || x > width || y < 0 || y > height
+    p'@(x', y') = p `add` v
+    v' = rot90 v
+    oob = x' < 0 || x' >= width || y' < 0 || y' >= height
+    i = x + y * width
+    i' = x' + y' * width
 
-add :: (Int, Int) -> (Int, Int) -> (Int, Int)
-add (!x1, !y1) (!x2, !y2) = (x1 + x2, y1 + y2)
+  update i v p = MU.unsafeRead seen i >>= \case
+    s | s `shiftR` 4 == gen -> do
+      -- state is current generation, check if we've been here
+      if (s .&. flag v) /= 0
+         -- already visited tile w/ this direction
+        then pure True
+        else do
+          -- add this direction, keep going
+          MU.unsafeWrite seen i (s .|. flag v)
+          go v p
+    _ -> do
+      -- visited is old generation, set new one w/ direction, keep going
+      MU.unsafeWrite seen i ((gen `shiftL` 4) .|. flag v)
+      go v p
+  {-# INLINE update #-}
 
 rot90 :: (Int, Int) -> (Int, Int)
 rot90 = \case
@@ -70,28 +94,46 @@ rot90 = \case
   ( 1,  0) -> ( 0,  1)
   ( 0,  1) -> (-1,  0)
   (-1,  0) -> ( 0, -1)
-  _ -> error "not a uniq vector"
+  _ -> error "not a unit vector"
+{-# INLINE rot90 #-}
+
+flag :: (Int, Int) -> Word
+flag = \case
+  ( 0, -1) -> 1
+  ( 1,  0) -> 2
+  ( 0,  1) -> 4
+  (-1,  0) -> 8
+  _ -> error "not a unit vector"
+{-# INLINE flag #-}
+
+add :: (Int, Int) -> (Int, Int) -> (Int, Int)
+add (!x1, !y1) (!x2, !y2) = (x1 + x2, y1 + y2)
 
 data Grid = Grid
-  { start :: Maybe (Int, Int)
-  , block :: HashSet (Int, Int)
+  { start :: (Int, Int)
+  , grid :: U.Vector Word8
   , width :: Int
   , height :: Int
   }
-  deriving Show
 
-instance Semigroup Grid where
-  Grid s1 b1 w1 h1 <> Grid s2 b2 w2 h2 = Grid (s1 <|> s2) (b1 <> b2) (w1 `max` w2) (h1 `max` h2)
-
-instance Monoid Grid where
-  mempty = Grid Nothing mempty 0 0
-
-toMap :: Text -> Grid
-toMap t = mconcat $ do
-  (y, line) <- zip [0..] $ lines t
-  (x, c) <- zip [0..] $ unpack line
-  let g0 = mempty { width = x, height = y }
-  pure $ case c of
-    '^' -> g0 { start = Just (x, y) }
-    '#' -> g0 { block = HashSet.singleton (x, y) }
-    _   -> g0
+toGrid :: Text -> Grid
+toGrid t = Grid
+  { start = head [p | (p, 2) <- ps]
+  , grid = runST $ do
+      vs <- MU.new (width * height)
+      for_ ps $ \((x, y), i) -> do
+        MU.unsafeWrite vs (x + y * width) (i .&. 1)
+      U.freeze vs
+  , width
+  , height
+  }
+ where
+  width = 1 + maximum [x | ((x, _), _) <- ps]
+  height = 1 + maximum [y | ((_, y), _) <- ps]
+  ps = do
+    (y, line) <- zip [0..] $ lines t
+    (x, c) <- zip [0..] $ unpack line
+    pure $ case c of
+      '^' -> ((x, y), 2)
+      '#' -> ((x, y), 1)
+      _   -> ((x, y), 0)
