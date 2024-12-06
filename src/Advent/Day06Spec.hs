@@ -23,43 +23,43 @@ part1 :: Grid -> Int
 part1 = HashSet.size . search
 
 part2 :: Grid -> Int
-part2 g =
-  sum $ parFor ps $ \p ->
-    if hasCycle g { block = HashSet.insert p g.block }
-      then 1
-      else 0
+part2 g = sum $ go $ \p ->
+  if hasCycle g { block = HashSet.insert p g.block }
+    then 1
+    else 0
  where
-  ps = HashSet.toList $ search g
-  parFor = flip $ parMap rpar
+  go f = parMap rpar f $ HashSet.toList $ search g
 
 search :: Grid -> HashSet (Int, Int)
-search Grid{ start = Just s, ..} =
-  go (HashSet.singleton s) (0, -1) s
- where
-  go !seen v p
-    | outOfBounds               = seen
-    | p' `HashSet.member` block = go seen v' p
-    | otherwise                 = go (HashSet.insert p' seen) v p'
+search = \case
+  Grid{ start = Nothing } -> mempty
+  Grid{ start = Just s, ..} ->
+    go (HashSet.singleton s) (0, -1) s
    where
-    p'@(x, y) = p `add` v
-    v' = rot90 v
-    outOfBounds = x < 0 || x > width || y < 0 || y > height
-search _ = HashSet.empty
+    go !seen v p
+      | outOfBounds               = seen
+      | p' `HashSet.member` block = go seen v' p
+      | otherwise                 = go (HashSet.insert p' seen) v p'
+     where
+      p'@(x, y) = p `add` v
+      v' = rot90 v
+      outOfBounds = x < 0 || x > width || y < 0 || y > height
 
 hasCycle :: Grid -> Bool
-hasCycle Grid{ start = Just s, ..} = do
-  let up = (0, -1)
-  go (HashSet.singleton (up, s)) up s
- where
-  go !seen v p
-    | outOfBounds               = False
-    | p' `HashSet.member` block = (v', p ) `HashSet.member` seen || go (HashSet.insert (v', p ) seen) v' p
-    | otherwise                 = (v , p') `HashSet.member` seen || go (HashSet.insert (v , p') seen) v  p'
+hasCycle = \case
+  Grid{ start = Nothing } -> False
+  Grid{ start = Just s, ..} -> do
+    let up = (0, -1)
+    go (HashSet.singleton (up, s)) up s
    where
-    p'@(x, y) = p `add` v
-    v' = rot90 v
-    outOfBounds = x < 0 || x > width || y < 0 || y > height
-hasCycle _ = False
+    go !seen v p
+      | outOfBounds               = False
+      | p' `HashSet.member` block = (v', p ) `HashSet.member` seen || go (HashSet.insert (v', p ) seen) v' p
+      | otherwise                 = (v , p') `HashSet.member` seen || go (HashSet.insert (v , p') seen) v  p'
+     where
+      p'@(x, y) = p `add` v
+      v' = rot90 v
+      outOfBounds = x < 0 || x > width || y < 0 || y > height
 
 add :: (Int, Int) -> (Int, Int) -> (Int, Int)
 add (!x1, !y1) (!x2, !y2) = (x1 + x2, y1 + y2)
@@ -81,11 +81,7 @@ data Grid = Grid
   deriving Show
 
 instance Semigroup Grid where
-  Grid s1 b1 w1 h1 <> Grid s2 b2 w2 h2 = Grid (firstJust s1 s2) (b1 <> b2) (w1 `max` w2) (h1 `max` h2)
-   where
-    firstJust (Just x) _ = Just x
-    firstJust _ (Just y) = Just y
-    firstJust _ _ = Nothing
+  Grid s1 b1 w1 h1 <> Grid s2 b2 w2 h2 = Grid (s1 <|> s2) (b1 <> b2) (w1 `max` w2) (h1 `max` h2)
 
 instance Monoid Grid where
   mempty = Grid Nothing mempty 0 0
