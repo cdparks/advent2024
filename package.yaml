@@ -32,6 +32,7 @@ default-extensions:
 - ImportQualifiedPost
 - LambdaCase
 - MultiParamTypeClasses
+- MultiWayIf
 - NamedFieldPuns
 - NoFieldSelectors
 - NoImplicitPrelude
