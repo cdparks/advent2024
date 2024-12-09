@@ -67,7 +67,7 @@ import Data.Map.Strict as X (Map)
 import Data.Maybe as X
 import Data.Ord as X
 import Data.Proxy as X (Proxy(..))
-import Data.Sequence as X (Seq, (<|), (|>), ViewL(..), ViewR(..), viewl, viewr)
+import Data.Sequence as X (Seq, (<|), (|>), pattern (:<|), pattern (:|>), pattern Empty)
 import Data.Set as X (Set)
 import Data.Text as X (Text, lines, pack, split, splitOn, unlines, unpack, unwords, words)
 import Data.Text.IO as X
