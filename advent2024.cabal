@@ -33,6 +33,7 @@ library
       Advent.Day07Spec
       Advent.Day08Spec
       Advent.Day09Spec
+      Advent.Day10Spec
       Advent.Input
       Advent.Parse
       Advent.Prelude
@@ -81,6 +82,7 @@ library
   build-depends:
       attoparsec
     , base >=4.7 && <5
+    , bytestring
     , containers
     , extra
     , filepath

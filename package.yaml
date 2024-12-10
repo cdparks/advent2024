@@ -64,6 +64,7 @@ library:
   source-dirs: src
   dependencies:
   - attoparsec
+  - bytestring
   - containers
   - extra
   - filepath
