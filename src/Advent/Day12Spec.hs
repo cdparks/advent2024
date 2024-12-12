@@ -19,122 +19,96 @@ spec = reading toPlots 12 $ do
     part2 example `shouldBe` 1206
     part2 problem `shouldBe` 897062
 
-data Groups = Groups
-  { groups :: HashMap (Char, Int) [Point]
-  , seen :: HashMap Point Int
-  , nextId :: Int
-  }
+part1 :: Plots -> Int
+part1 = solve $ \plots c ->
+  sum . map ((4 -) . length . neighbors plots c)
 
-type Point = (Int, Int)
-data Face = N | E | W | S
-  deriving Eq
+part2 :: Plots -> Int
+part2 = solve $ \plots c ->
+  corners . sides plots c
+ where
+  corners fs = length $ do
+    (f, p) <- HashSet.toList fs
+    guard $ not $ (f, rot90 p f) `HashSet.member` fs
 
-part1 :: HashMap Point Char -> Int
-part1 plots = done $ run $ do
-  for_ (HashMap.toList plots) $ \(p, c) -> do
-    seen <- gets (.seen)
-    unless (p `HashMap.member` seen) $ do
-      let group = flood c p
-      modify $ \gs -> gs
-        { groups = HashMap.insert (c, gs.nextId) group gs.groups
-        , seen = gs.seen `HashMap.union` HashMap.fromList [(q, gs.nextId) | q <- group]
-        , nextId = gs.nextId + 1
+solve :: (Plots -> Char -> [Point] -> Int) -> Plots -> Int
+solve price plots = sum $ do
+  ((c, _), ps) <- HashMap.toList $ toRegions plots
+  pure $ length ps * price plots c ps
+
+toRegions :: Plots -> HashMap (Char, Int) [Point]
+toRegions plots =
+  run $ for_ (HashMap.toList plots) $ \(p, c) -> do
+    visited <- gets $ HashMap.member p . (.seen)
+    unless visited $ do
+      let region = flood plots c p
+      modify $ \Regions{..} -> Regions
+        { regions = HashMap.insert (c, nextId) region regions
+        , seen = seen `HashMap.union` HashMap.fromList [(q, nextId) | q <- region]
+        , nextId = nextId + 1
         }
  where
-  run :: State Groups () -> HashMap (Char, Int) [Point]
-  run = (.groups) . flip execState Groups
-    { groups = mempty
+  run = (.regions) . flip execState Regions
+    { regions = mempty
     , seen = mempty
     , nextId = 0
     }
 
-  flood :: Char -> Point -> [Point]
-  flood c = go mempty . Seq.singleton
-   where
-    go group = \case
-      p :<| ps
-        | p `HashSet.member` group -> go group ps
-        | otherwise -> go (HashSet.insert p group) (ps <> Seq.fromList (neighbors c p))
-      Empty -> HashSet.toList group
-
-  done :: HashMap (Char, Int) [Point] -> Int
-  done groups = sum $ do
-    ((c, _), ps) <- HashMap.toList groups
-    pure $ length ps * sum (uncovered c <$> ps)
-
-  neighbors :: Char -> Point -> [Point]
-  neighbors c (x, y) = do
-    q <- neighborCoords (x, y)
-    q <$ guard (HashMap.lookup q plots == Just c)
-
-  neighborCoords :: Point -> [Point]
-  neighborCoords (x, y) = [(x+0, y-1), (x-1, y+0), (x+0, y+1), (x+1, y+0)]
-
-  uncovered :: Char -> Point -> Int
-  uncovered c = (4 -) . length . neighbors c
-
-part2 :: HashMap Point Char -> Int
-part2 plots = done $ run $ do
-  for_ (HashMap.toList plots) $ \(p, c) -> do
-    seen <- gets (.seen)
-    unless (p `HashMap.member` seen) $ do
-      let group = flood c p
-      modify $ \gs -> gs
-        { groups = HashMap.insert (c, gs.nextId) group gs.groups
-        , seen = gs.seen `HashMap.union` HashMap.fromList [(q, gs.nextId) | q <- group]
-        , nextId = gs.nextId + 1
-        }
+flood :: Plots -> Char -> Point -> [Point]
+flood plots c =
+  go mempty . Seq.singleton
  where
-  run :: State Groups () -> HashMap (Char, Int) [Point]
-  run = (.groups) . flip execState Groups
-    { groups = mempty
-    , seen = mempty
-    , nextId = 0
-    }
+  go region = \case
+    Empty -> HashSet.toList region
+    p :<| ps
+      | p `HashSet.member` region -> go region ps
+      | otherwise -> do
+          let updated = HashSet.insert p region
+          let qs = ps <> Seq.fromList (neighbors plots c p)
+          go updated qs
 
-  flood :: Char -> Point -> [Point]
-  flood c = go mempty . Seq.singleton
-   where
-    go group = \case
-      p :<| ps
-        | p `HashSet.member` group -> go group ps
-        | otherwise -> go (HashSet.insert p group) (ps <> Seq.fromList (neighbors c p))
-      Empty -> HashSet.toList group
+neighbors :: Plots -> Char -> Point -> [Point]
+neighbors plots c (x, y) = do
+  (_, q) <- neighborCoords (x, y)
+  q <$ guard (HashMap.lookup q plots == Just c)
 
-  done :: HashMap (Char, Int) [Point] -> Int
-  done groups = sum $ do
-    ((c, _), ps) <- HashMap.toList groups
-    pure $ length ps * straights (sides c =<< ps)
+sides :: Plots -> Char -> [Point] -> HashSet (Face, Point)
+sides plots c ps = HashSet.fromList $ do
+  p <- ps
+  (s, q) <- neighborCoords p
+  (s, p) <$ guard (HashMap.lookup q plots /= Just c)
 
-  neighbors :: Char -> Point -> [Point]
-  neighbors c (x, y) = do
-    (_, q) <- neighborCoords (x, y)
-    q <$ guard (HashMap.lookup q plots == Just c)
+neighborCoords :: Point -> [(Face, Point)]
+neighborCoords (x, y) =
+  [ (N, (x+0, y-1))
+  , (E, (x+1, y+0))
+  , (W, (x-1, y+0))
+  , (S, (x+0, y+1))
+  ]
 
-  sides :: Char -> Point -> [(Face, Point)]
-  sides c p = do
-    (s, q) <- neighborCoords p
-    (s, p) <$ guard (HashMap.lookup q plots /= Just c)
+rot90 :: Point -> Face -> Point
+rot90 (x, y) = \case
+  N -> (x+1, y)
+  E -> (x, y+1)
+  W -> (x, y+1)
+  S -> (x+1, y)
 
-  straights :: [(Face, Point)] -> Int
-  straights fs = (length fs -) . length $ do
-    (i :: Int, (f0, (x0, y0))) <- zip [0..] fs
-    (j :: Int, (f1, (x1, y1))) <- zip [0..] fs
-    guard $ j > i
-    guard
-      $  x0 == x1 && abs (y0 - y1) == 1 && f0 == f1
-      || y0 == y1 && abs (x0 - x1) == 1 && f0 == f1
-
-  neighborCoords :: Point -> [(Face, Point)]
-  neighborCoords (x, y) =
-    [ (N, (x+0, y-1))
-    , (E, (x+1, y+0))
-    , (W, (x-1, y+0))
-    , (S, (x+0, y+1))
-    ]
-
-toPlots :: Text -> HashMap Point Char
+toPlots :: Text -> Plots
 toPlots t = HashMap.fromList $ do
   (y, line) <- zip [0..] $ lines t
   (x, c) <- zip [0..] $ unpack line
   pure ((x, y), c)
+
+type Point = (Int, Int)
+
+data Face = N | E | W | S
+  deriving stock (Eq, Generic)
+  deriving anyclass Hashable
+
+type Plots = HashMap Point Char
+
+data Regions = Regions
+  { regions :: HashMap (Char, Int) [Point]
+  , seen :: HashMap Point Int
+  , nextId :: Int
+  }
