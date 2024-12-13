@@ -25,6 +25,12 @@ opt:
 build:
 	stack build advent2024 --pedantic --fast --interleaved-output
 
+## Build optimized and dump final core
+.PHONY: core
+core:
+	stack build advent2024 --pedantic --interleaved-output --ghc-options='-ddump-to-file -ddump-simpl'
+	find . -name 'Day*.dump-simpl' | sort -h
+
 ## Update compiler, dependencies, and tools
 .PHONY: update
 update:
