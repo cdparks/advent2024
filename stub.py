@@ -55,7 +55,7 @@ def get_session(error):
     if session is not None:
         return session
     try:
-        return open('AOC_SESSION').read()
+        return open('AOC_SESSION').read().strip()
     except Exception as e:
         error('set AOC_SESSION environment variable or write AOC_SESSION file')
 

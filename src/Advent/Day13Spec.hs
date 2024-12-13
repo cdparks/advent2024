@@ -6,7 +6,6 @@ import Advent.Prelude
 
 import Advent.Input
 import Advent.Parse
-import Numeric.LinearAlgebra (Matrix, (><), linearSolve, toLists)
 
 spec :: Spec
 spec = parsing machines 13 $ do
@@ -24,16 +23,25 @@ part1 = sum . mapMaybe (cost id)
 part2 :: [Machine] -> Int
 part2 = sum . mapMaybe (cost (+10000000000000))
 
+-- See https://en.wikipedia.org/wiki/Cramer%27s_rule#Explicit_formulas_for_small_systems
+--
+--   ⌈a₁ b₁⌉ ⌈x⌉ = ⌈c₁⌉
+--   ⌊a₂ b₂⌋ ⌊y⌋ = ⌊c₂⌋
+--
+--       c₁b₂ - b₁c₂
+--   x = ―――――――――――
+--       a₁b₂ - b₁a₂
+--
+--       a₁c₂ - c₁a₂
+--   y = ―――――――――――
+--       a₁b₂ - b₁a₂
+--
 cost :: (Int -> Int) -> Machine -> Maybe Int
-cost f ((ax, ay), (bx, by), (f -> px, f -> py)) = do
-  [n, m] <- map round . concat . toLists <$> linearSolve a b
-  guard $ n * ax + m * bx == px
-  guard $ n * ay + m * by == py
-  pure $ n * 3 + m
- where
-  a, b :: Matrix Double
-  a = (2><2) $ fromIntegral <$> [ax, bx, ay, by]
-  b = (2><1) $ fromIntegral <$> [px, py]
+cost f ((a₁, a₂), (b₁, b₂), (f -> c₁, f -> c₂)) = do
+  let det = a₁ * b₂ - b₁ * a₂
+  (x, 0) <- pure $ (c₁ * b₂ - b₁ * c₂) `divMod` det
+  (y, 0) <- pure $ (a₁ * c₂ - c₁ * a₂) `divMod` det
+  pure $ x * 3 + y
 
 type Machine = ((Int, Int), (Int, Int), (Int, Int))
 
