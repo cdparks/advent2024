@@ -37,6 +37,7 @@ default-extensions:
 - NoFieldSelectors
 - NoImplicitPrelude
 - NoStarIsType
+- NumericUnderscores
 - OverloadedStrings
 - OverloadedRecordDot
 - PatternSynonyms
@@ -68,6 +69,7 @@ library:
   - containers
   - extra
   - filepath
+  - hmatrix
   - hashable
   - hspec
   - hspec-api
