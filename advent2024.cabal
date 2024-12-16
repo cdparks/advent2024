@@ -39,6 +39,7 @@ library
       Advent.Day13Spec
       Advent.Day14Spec
       Advent.Day15Spec
+      Advent.Day16Spec
       Advent.Input
       Advent.Parse
       Advent.Prelude
@@ -101,6 +102,7 @@ library
     , monoidal-containers
     , mtl
     , parallel
+    , pqueue
     , safe
     , text
     , time

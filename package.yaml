@@ -78,6 +78,7 @@ library:
   - monoidal-containers
   - mtl
   - parallel
+  - pqueue
   - safe
   - text
   - time
