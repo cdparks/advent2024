@@ -95,7 +95,6 @@ library
     , extra
     , filepath
     , hashable
-    , hmatrix
     , hspec
     , hspec-api
     , microlens

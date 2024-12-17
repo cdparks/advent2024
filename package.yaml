@@ -69,7 +69,6 @@ library:
   - containers
   - extra
   - filepath
-  - hmatrix
   - hashable
   - hspec
   - hspec-api
