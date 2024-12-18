@@ -65,6 +65,7 @@ library:
   source-dirs: src
   dependencies:
   - attoparsec
+  - binary-search
   - bytestring
   - containers
   - extra

@@ -41,6 +41,7 @@ library
       Advent.Day15Spec
       Advent.Day16Spec
       Advent.Day17Spec
+      Advent.Day18Spec
       Advent.Input
       Advent.Parse
       Advent.Prelude
@@ -90,6 +91,7 @@ library
   build-depends:
       attoparsec
     , base >=4.7 && <5
+    , binary-search
     , bytestring
     , containers
     , extra
