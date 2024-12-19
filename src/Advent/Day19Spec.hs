@@ -7,9 +7,6 @@ import Advent.Prelude
 import Advent.Input
 import Advent.Parse
 import Data.HashMap.Strict qualified as HashMap
-import Data.List (isPrefixOf)
-import Data.Trie (Trie)
-import Data.Trie qualified as Trie
 
 spec :: Spec
 spec = parsing designs 19 $ do
@@ -21,27 +18,31 @@ spec = parsing designs 19 $ do
     uncurry part2 example `shouldBe` 16
     uncurry part2 problem `shouldBe` 635018909726691
 
-part1 :: Trie -> [String] -> Int
+part1 :: [String] -> [String] -> Int
 part1 dict xs =
   length $ guard . search =<< xs
  where
   search = \case
     [] -> True
-    c:cs -> or $ do
-      suffix <- Trie.possibleSuffixes [c] dict
-      guard $ suffix `isPrefixOf` cs
-      pure $ search $ drop (length suffix) cs
+    cs -> or $ do
+      candidate <- dict
+      search <$> maybeToList (dropPrefix candidate cs)
 
-part2 :: Trie -> [String] -> Int
+part2 :: [String] -> [String] -> Int
 part2 dict =
   sum . (`evalState` mempty) . traverse search
  where
   search = memo $ \case
     [] -> pure 1
-    c:cs -> fmap sum . traverse search $ do
-      candidate <- Trie.possibleSuffixes [c] dict
-      guard $ candidate `isPrefixOf` cs
-      pure $ drop (length candidate) cs
+    cs -> fmap sum . traverse search $ do
+      candidate <- dict
+      maybeToList $ dropPrefix candidate cs
+
+dropPrefix :: Eq a => [a] -> [a] -> Maybe [a]
+dropPrefix [] ys = Just ys
+dropPrefix (x:xs) (y:ys)
+  | x == y = dropPrefix xs ys
+dropPrefix _ _ = Nothing
 
 memo
   :: (Hashable k, MonadState (HashMap k v) m)
@@ -54,9 +55,9 @@ memo f k = gets (HashMap.lookup k) >>= \case
     v <- f k
     v <$ modify (HashMap.insert k v)
 
-designs :: Parser (Trie, [String])
+designs :: Parser ([String], [String])
 designs = (,)
-  <$> fmap Trie.fromList (word `sepBy` ", ")
+  <$> word `sepBy` ", "
   <*  twoNewlines
   <*> many (word <* endOfLine)
  where
