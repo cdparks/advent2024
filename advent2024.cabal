@@ -42,6 +42,7 @@ library
       Advent.Day16Spec
       Advent.Day17Spec
       Advent.Day18Spec
+      Advent.Day19Spec
       Advent.Input
       Advent.Parse
       Advent.Prelude
@@ -112,6 +113,7 @@ library
     , unliftio-core
     , unordered-containers
     , vector
+    , word-trie
   default-language: Haskell2010
 
 executable advent2024

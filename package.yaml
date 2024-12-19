@@ -86,6 +86,7 @@ library:
   - unliftio-core
   - unordered-containers
   - vector
+  - word-trie
 
 executables:
   advent2024:
